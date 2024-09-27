@@ -99,7 +99,7 @@ function Home() {
               </div>
             ))}
             {audioUrl && (
-              <audio controls ref={audioRef}>
+             <audio controls ref={audioRef} role="audio">
                 <source src={audioUrl} type="audio/mpeg" />
                 Your browser does not support the audio element.
               </audio>

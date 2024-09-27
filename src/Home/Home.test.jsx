@@ -133,12 +133,12 @@ describe("App", () => {
     const buttonElement = screen.queryByRole("button", { name: "Search" });
     userEvent.click(buttonElement);
     await waitFor(() => {
-      const errorMessage = screen.getByText("Input field empty");
+      const errorMessage = screen.getByText("Search field is empty");
       expect(errorMessage).toBeInTheDocument();
     });
   });
   it("mock api and display data", async () => {
-    const inputElement = screen.getByPlaceholderText("enter word");
+    const inputElement = screen.getByPlaceholderText("Enter the word to search");
     expect(inputElement).toBeInTheDocument();
     await userEvent.type(inputElement, "hello");
     expect(inputElement).toHaveValue("hello");
