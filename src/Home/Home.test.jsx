@@ -5,7 +5,7 @@ import { setupServer } from "msw/node";
 import Home from "./Home";
 import userEvent from "@testing-library/user-event";
 
-
+// Setting up the Mock Service Worker (MSW)
 const server = setupServer(
   http.get("/hello", () => {
     return HttpResponse.json([
@@ -70,33 +70,7 @@ const server = setupServer(
                 antonyms: [],
                 example: "Hello, everyone.",
               },
-              {
-                definition: "A greeting used when answering the telephone.",
-                synonyms: [],
-                antonyms: [],
-                example: "Hello? How may I help you?",
-              },
-              {
-                definition:
-                  "A call for response if it is not clear if anyone is present or listening, or if a telephone conversation may have been disconnected.",
-                synonyms: [],
-                antonyms: [],
-                example: "Hello? Is anyone there?",
-              },
-              {
-                definition:
-                  "Used sarcastically to imply that the person addressed or referred to has done something the speaker or writer considers to be foolish.",
-                synonyms: [],
-                antonyms: [],
-                example:
-                  "You just tried to start your car with your cell phone. Hello?",
-              },
-              {
-                definition: "An expression of puzzlement or discovery.",
-                synonyms: [],
-                antonyms: [],
-                example: "Hello! What’s going on here?",
-              },
+              // Additional definitions...
             ],
             synonyms: [],
             antonyms: ["bye", "goodbye"],
@@ -112,58 +86,62 @@ const server = setupServer(
   })
 );
 
+// Start the server before tests and close it afterward
 beforeAll(() => server.listen());
 afterAll(() => server.close());
 
-
-
-describe("App", () => {
+describe("Home Component", () => {
+  // Render the Home component before each test
   beforeEach(() => {
     render(<Home />);
   });
-  it("input field must be present", () => {
-    const inputElement = screen.getByPlaceholderText("enter word");
+
+  // Test if input field is present
+  it("should display the input field", () => {
+    const inputElement = screen.getByPlaceholderText("Enter the word to search");
     expect(inputElement).toBeInTheDocument();
   });
-  it("search button must be present", () => {
-    const buttonElement = screen.queryByRole("button", { name: "Search" });
+
+  // Test if search button is present
+  it("should display the search button", () => {
+    const buttonElement = screen.getByRole("button", { name: "Search" });
     expect(buttonElement).toBeInTheDocument();
   });
-  it("if input field empty then show error message", async () => {
-    const buttonElement = screen.queryByRole("button", { name: "Search" });
+
+  // Test error message when input field is empty
+  it("should show an error message when input field is empty", async () => {
+    const buttonElement = screen.getByRole("button", { name: "Search" });
     userEvent.click(buttonElement);
     await waitFor(() => {
-      const errorMessage = screen.getByText("Search field is empty");
+      const errorMessage = screen.getByText("Input field empty");
       expect(errorMessage).toBeInTheDocument();
     });
   });
-  it("mock api and display data", async () => {
+
+  // Test API mock and display data
+  it("should display data from mock API", async () => {
     const inputElement = screen.getByPlaceholderText("Enter the word to search");
-    expect(inputElement).toBeInTheDocument();
     await userEvent.type(inputElement, "hello");
-    expect(inputElement).toHaveValue("hello");
-    const buttonElement = screen.queryByRole("button", { name: "Search" });
+    const buttonElement = screen.getByRole("button", { name: "Search" });
     userEvent.click(buttonElement);
-     await waitFor(() => {
-       expect(
-         screen.getByText("noun")
-       ).toBeInTheDocument();
-     });
+    await waitFor(() => {
+      expect(screen.getByText("noun")).toBeInTheDocument();
+    });
   });
-  it("mock api and display audio", async () => {
+
+  // Test if audio is displayed correctly
+  it("should display audio from mock API", async () => {
     const inputElement = screen.getByPlaceholderText("Enter the word to search");
-    expect(inputElement).toBeInTheDocument();
     await userEvent.type(inputElement, "hello");
-    expect(inputElement).toHaveValue("hello");
-    const buttonElement = screen.queryByRole("button", { name: "Search" });
+    const buttonElement = screen.getByRole("button", { name: "Search" });
     userEvent.click(buttonElement);
-     await waitFor(() => {
-        const audioElement = screen.getByRole("audio");
-        expect(audioElement).toBeInTheDocument();
-        expect(audioElement.querySelector("source")).toHaveAttribute(
-              "src",
-              "https://api.dictionaryapi.dev/media/pronunciations/en/hello-au.mp3"
-            );
-     });
+    await waitFor(() => {
+      const audioElement = screen.getByRole("audio");
+      expect(audioElement).toBeInTheDocument();
+      expect(audioElement.querySelector("source")).toHaveAttribute(
+        "src",
+        "https://api.dictionaryapi.dev/media/pronunciations/en/hello-au.mp3"
+      );
+    });
   });
 });

@@ -1,105 +1,99 @@
 import { useState, useRef } from "react";
 
 function Home() {
-  // State to hold the searched word
+  // State variables to hold searched word, meanings, audio URL, and error messages
   const [searchedWord, setSearchedWord] = useState("");
-
-  // State to hold the meanings fetched from the API
   const [meanings, setMeanings] = useState([]);
-
-  // State to hold the audio URL for pronunciation
   const [audioUrl, setAudioUrl] = useState("");
+  const [error, setError] = useState("");
 
-  // API base URL for dictionary lookup
+  // Base URL for the dictionary API
   const baseUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
+  const audioRef = useRef(null); // Ref to control audio playback
 
-  // Reference to control the audio element
-  const audioRef = useRef(null);
-
-  // Function to handle search request
+  // Function to handle the search operation
   async function handleSearch(event) {
-    event.preventDefault(); // Prevent form submission refresh
+    event.preventDefault(); // Prevent the default form submission behavior
     if (searchedWord === "") {
-      // Show alert if search field is empty
-      console.log("empty");
-      window.alert("Search field is empty");
+      // Show error if input is empty
+      setError("Input field empty");
     } else {
+      setError(""); // Clear error message
       try {
-        // Fetch data from the dictionary API
-        let response = await fetch(`${baseUrl}${searchedWord}`, {
-          method: "GET",
-        });
-
+        // Fetch data from the API
+        let response = await fetch(`${baseUrl}${searchedWord}`);
         const data = await response.json();
-        console.log(data); // Log the received data for debugging
 
-        // Set meanings from the API response
+        // Update meanings state with fetched data
         setMeanings(data[0].meanings);
-
-        // If phonetics data is available, set the audio URL
+        
+        // Set audio URL if available
         if (data[0].phonetics.length > 0) {
           setAudioUrl(data[0].phonetics[0].audio);
-
-          // If there's an existing audioRef, pause and reload the audio to reset it
+          
+          // If audio is currently playing, pause and reload
           if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.load();
           }
         } else {
-          // Clear audio URL if no phonetics are found
-          setAudioUrl("");
+          setAudioUrl(""); // Reset audio URL if not available
         }
-      } 
-      catch (error) {
-        // Log error if the word is not found
+      } catch (error) {
         console.log("Word not found");
+        setError("Word not found"); // Show error if the word is not found
       }
     }
   }
 
-  // Function to clear the displayed meanings and audio when the X button is clicked
+  // Function to handle closing the results
   function handleClose() {
-    setMeanings([]); // Clear the meanings
-    setAudioUrl(""); // Clear the audio URL
-    setSearchedWord(""); // Clear the searched word input
+    // Reset all state variables to initial values
+    setMeanings([]);
+    setAudioUrl("");
+    setSearchedWord("");
   }
 
   return (
     <section>
+      <header>
+        <h1>Online Word Search!</h1>
+        {error && <p style={{ color: "red" }}>{error}</p>} {/* Display error message if present */}
+      </header>
+      
+      <form onSubmit={handleSearch}>
+        <label htmlFor="search-input">Enter word:</label>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Enter the word to search"
+          value={searchedWord}
+          onChange={(event) => {
+            setSearchedWord(event.target.value);
+            setError(""); // Clear error when typing
+          }}
+        />
+        <button type="submit">Search</button> {/* Use type="submit" for the button */}
+      </form>
+
       <section>
-        <h1>Online word search !!!</h1>
-        <form>
-          <label> Enter word : </label>
-          <input
-            type="text"
-            placeholder="Enter the word to search"
-            value={searchedWord} // Bind input value to the searchedWord state
-            onChange={(event) => {
-              setSearchedWord(event.target.value); // Update searchedWord state when input changes
-            }}
-          />
-          <button onClick={(event) => handleSearch(event)}> Search </button>
-        </form>
-      </section>
-      <section>
-       
         {meanings.length > 0 && (
           <div>
             <button onClick={handleClose} style={{ float: "right", cursor: "pointer" }}>
-              X
+              X {/* Button to close the results */}
             </button>
             {meanings.map((meaning, index) => (
               <div key={index}>
-                <h4>{meaning.partOfSpeech}</h4>
+                <h4>{meaning.partOfSpeech}</h4> {/* Display part of speech */}
                 {meaning.definitions.map((definition, defIndex) => (
                   <div key={defIndex}>
-                    <p>{definition.definition}</p>
+                    <p>{definition.definition}</p> {/* Display definition */}
                   </div>
                 ))}
               </div>
             ))}
             {audioUrl && (
-             <audio controls ref={audioRef} role="audio">
+              <audio controls ref={audioRef}> {/* Audio player for pronunciation */}
                 <source src={audioUrl} type="audio/mpeg" />
                 Your browser does not support the audio element.
               </audio>
