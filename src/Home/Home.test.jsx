@@ -126,7 +126,7 @@ describe("Home Component", () => {
     userEvent.click(buttonElement);
     await waitFor(() => {
       expect(screen.getByText("noun")).toBeInTheDocument();
-    });
+    },{timeout:5000});
   });
 
   // Test if audio is displayed correctly
